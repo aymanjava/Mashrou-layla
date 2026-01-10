@@ -1,5 +1,5 @@
 const login = require("fca-unofficial");
-const fs = require("fs-extra");
+const fs = require("fs");
 const path = require("path");
 
 const config = require("../config/bot.config");
@@ -18,21 +18,14 @@ async function startBot() {
 
   login(
     { appState },
-    {
-      listenEvents: true,
-      selfListen: false,
-      logLevel: "silent"
-    },
+    { listenEvents: true, selfListen: false, logLevel: "silent" },
     (err, api) => {
       if (err) {
         console.error("❌ فشل تسجيل الدخول:", err);
         process.exit(1);
       }
 
-      api.setOptions({
-        forceLogin: true,
-        listenEvents: true
-      });
+      api.setOptions({ forceLogin: true, listenEvents: true });
 
       global.Layla = {
         api,
