@@ -1,12 +1,15 @@
 module.exports = {
   name: "اوامر",
-  description: "📜 عرض جميع أوامر بوت ليلى",
+  description: "📜 عرض قائمة الأوامر",
   execute({ api, event }) {
-    const commands = Array.from(global.Layla.commands.keys());
-    let msg = "🎶 قائمة أوامر ليلى:\n\n";
-    for (const cmd of commands) {
-      msg += `• ${global.Layla.config.prefix}${cmd}\n`;
-    }
-    api.sendMessage(msg, event.threadID);
+    const cmds = [
+      ".layla", ".mood", ".ping", ".معلومات",
+      ".نكتة", ".اقتباس", ".حظ", ".لغز",
+      ".رموز", ".تحدي", ".طرد", ".حظر",
+      ".كتم", ".بث", ".مسح", ".تشغيل",
+      ".ايقاف", ".تخطي", ".قائمة", ".اقترح"
+      // ... أكمل باقي الأوامر لتصل 50 أمر
+    ];
+    api.sendMessage(`📜 قائمة الأوامر:\n${cmds.join("\n")}`, event.threadID);
   }
 };
