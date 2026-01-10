@@ -1,19 +1,8 @@
 {
-  "botName": "ليلى",
+  "name": "layla",
   "prefix": ".",
-  "developer": {
-    "name": "أيمن",
-    "id": "61586019840418"
-  },
-  "commands": {
-    "cooldown": 5,
-    "categories": ["fun", "admin", "utility", "system"]
-  },
-  "facebook": {
-    "cookies": [
-      {"key": "c_user", "value": "61586019840418", "domain": "facebook.com"},
-      {"key": "xs", "value": "42%3AZzcfHY_CU4ciVw%3A2%3A1768074115%3A-1%3A-1", "domain": "facebook.com"}
-      // أضف باقي الكوكيز هنا
-    ]
-  }
+  "developerID": "61586019840418",
+  "moods": "src/core/moods.js",
+  "commandsFolder": "src/core/commands",
+  "eventsFolder": "src/core/events"
 }
