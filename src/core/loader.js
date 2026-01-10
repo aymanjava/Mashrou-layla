@@ -1,49 +1,21 @@
 const fs = require("fs");
 const path = require("path");
 
+const commands = [];
+
 function loadCommands() {
-  const commandsPath = path.join(__dirname, "../commands");
+  const commandFiles = fs.readdirSync(path.join(__dirname, "../commands")).filter(file => file.endsWith(".js"));
 
-  const load = (dir) => {
-    const files = fs.readdirSync(dir);
-    for (const file of files) {
-      const fullPath = path.join(dir, file);
-      if (fs.statSync(fullPath).isDirectory()) {
-        load(fullPath);
-      } else if (file.endsWith(".js")) {
-        try {
-          const cmd = require(fullPath);
-          if (cmd.name && typeof cmd.execute === "function") {
-            global.Layla.commands.set(cmd.name, cmd);
-          }
-        } catch (e) {
-          console.error("❌ Failed to load command:", fullPath, e.message);
-        }
-      }
-    }
-  };
-
-  load(commandsPath);
-  console.log(`✅ Loaded ${global.Layla.commands.size} commands`);
-}
-
-function loadEvents() {
-  const eventsPath = path.join(__dirname, "../events");
-  const files = fs.readdirSync(eventsPath);
-
-  for (const file of files) {
-    if (!file.endsWith(".js")) continue;
+  for (const file of commandFiles) {
     try {
-      const event = require(path.join(eventsPath, file));
-      if (event.name && typeof event.execute === "function") {
-        global.Layla.events.set(event.name, event);
-      }
-    } catch (e) {
-      console.error("❌ Failed to load event:", file, e.message);
+      const command = require(`../commands/${file}`);
+      commands.push(command);
+    } catch (err) {
+      console.error(`خطأ في تحميل الأمر ${file}:`, err.message);
     }
   }
 
-  console.log(`✅ Loaded ${global.Layla.events.size} events`);
+  return commands;
 }
 
-module.exports = { loadCommands, loadEvents };
+module.exports = { loadCommands };
