@@ -1,6 +1,6 @@
 {
   "name": "layla-bot",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "بوت ليلى – نظام أوامر ومزاجات ذكي",
   "main": "src/core/layla.js",
   "scripts": {
@@ -21,7 +21,7 @@
     "moment": "^2.30.0",
     "moment-timezone": "^0.5.43",
     "node-cron": "^3.0.3",
-    "node-fetch": "^3.4.3",
+    "node-fetch": "^3.3.2",
     "dotenv": "^16.4.1",
     "string-similarity": "^4.0.4",
     "tinyurl": "^1.1.8",
