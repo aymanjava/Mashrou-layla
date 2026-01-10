@@ -1,53 +1,35 @@
 {
-  "name": "zind",
-  "version": "31.7.2",
-  "description": "ZINO",
-  "main": "index.js",
+  "name": "layla-bot",
+  "version": "1.2.0",
+  "description": "بوت ليلى – أوامر، أحداث ومزاجات ذكي",
+  "main": "src/core/layla.js",
   "scripts": {
-    "start": "node index.js",
-    "login": "node login",
-    "test": "node --trace-warnings --use_strict --async-stack-traces mirai"
-  },
-  "engines": {
-    "node": "18.x"
+    "start": "node src/core/layla.js",
+    "login": "node src/core/login.js",
+    "test": "node --trace-warnings --use_strict --async-stack-traces src/core/test.js"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/aymanjava/Mashrou-layla.git"
   },
-  "keywords": [
-    "bot",
-    "facebook",
-    "projectmirai",
-    "messenger",
-    "mirai",
-    "catalizcs",
-    "spermlord",
-    "miraipr0ject"
-  ],
-  "author": "ZINO X MOHAMED",
-  "license": "GPL-3.0",
-  "bugs": {
-    "url": "https://github.com/aymanjava/Mashrou-layla/issues"
+  "author": "Ayman",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.18.1"
   },
-  "homepage": "https://github.com/aymanjava/Mashrou-layla",
   "dependencies": {
-    "@supercharge/strings": "^1.28.0",
-    "adm-zip": "^0.5.9",
-    "axios": "^1.5.1",
-    "bluebird": "^3.7.2",
-    "canvas": "^2.11.2",
-    "chalk": "^4.1.2",
-    "cheerio": "^1.0.0-rc.12",
-    "child_process": "^1.0.2",
-    "discord.js": "^14.8.0",
-    "express": "^4.17.2",
-    "form-data": "^4.0.0",
-    "fs-extra": "^11.2.0",
-    "moment-timezone": "",
-    "node-cron": "^3.0.2",
-    "sqlite3": "^5.1.2",
+    "axios": "^1.7.1",
+    "chalk": "^5.3.0",
+    "cheerio": "^1.1.0",
+    "express": "^4.18.2",
+    "fs-extra": "^11.4.0",
+    "moment": "^2.30.0",
+    "moment-timezone": "^0.5.43",
+    "node-cron": "^3.0.3",
+    "dotenv": "^16.4.1",
     "string-similarity": "^4.0.4",
-    "ytdl-core": "^4.11.5"
+    "sqlite3": "^5.1.6",
+    "sequelize": "^6.33.0",
+    "@dongdev/fca-unofficial": "github:dongdev/fca-unofficial#main"
   }
 }
