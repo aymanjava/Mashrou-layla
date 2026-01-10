@@ -15,11 +15,9 @@ function loadCommands() {
           const cmd = require(fullPath);
           if (cmd.name && typeof cmd.execute === "function") {
             global.Layla.commands.set(cmd.name, cmd);
-          } else {
-            console.warn(`⚠️ الأمر ${file} غير صالح وتجاهلناه`);
           }
         } catch (e) {
-          console.error(`❌ فشل تحميل الأمر ${file}:`, e.message);
+          console.error("❌ Failed to load command:", fullPath, e.message);
         }
       }
     }
@@ -39,11 +37,9 @@ function loadEvents() {
       const event = require(path.join(eventsPath, file));
       if (event.name && typeof event.execute === "function") {
         global.Layla.events.set(event.name, event);
-      } else {
-        console.warn(`⚠️ الحدث ${file} غير صالح وتجاهلناه`);
       }
     } catch (e) {
-      console.error(`❌ فشل تحميل الحدث ${file}:`, e.message);
+      console.error("❌ Failed to load event:", file, e.message);
     }
   }
 
