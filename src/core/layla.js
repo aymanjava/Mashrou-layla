@@ -1,47 +1,31 @@
-const login = require("fca-unofficial");
-const fs = require("fs");
-const path = require("path");
+const { loadCommands } = require("./loader");
+const fca = require("fca-unofficial");
 
-const config = require("../config/bot.config");
-const owner = require("../config/owner.config");
-const { loadCommands, loadEvents } = require("./loader");
+const commands = loadCommands();
 
-async function startBot() {
-  const appStatePath = path.join(__dirname, "../../appstate/appstate.json");
+// إعدادات بوت ليلى
+const apiOptions = {
+  email: "email@domain.com",
+  password: "password_here"
+};
 
-  if (!fs.existsSync(appStatePath)) {
-    console.error("❌ appstate.json غير موجود");
-    process.exit(1);
-  }
+fca(apiOptions, (err, api) => {
+  if (err) return console.error("فشل تسجيل الدخول:", err);
 
-  const appState = require(appStatePath);
+  console.log("✅ تم تسجيل الدخول بنجاح!");
 
-  login(
-    { appState },
-    { listenEvents: true, selfListen: false, logLevel: "silent" },
-    (err, api) => {
-      if (err) {
-        console.error("❌ فشل تسجيل الدخول:", err);
-        process.exit(1);
+  // استماع للرسائل
+  api.listenMqtt((err, event) => {
+    if (err) return console.error(err);
+
+    for (const command of commands) {
+      if (command.onStart) {
+        try {
+          command.onStart({ api, event });
+        } catch (e) {
+          console.error("خطأ في تنفيذ الأمر:", e.message);
+        }
       }
-
-      api.setOptions({ forceLogin: true, listenEvents: true });
-
-      global.Layla = {
-        api,
-        commands: new Map(),
-        events: new Map(),
-        config,
-        owner
-      };
-
-      loadCommands();
-      loadEvents();
-
-      console.log("🎶 Layla is alive...");
-      api.listenMqtt(require("./listener"));
     }
-  );
-}
-
-module.exports = { startBot };
+  });
+});
