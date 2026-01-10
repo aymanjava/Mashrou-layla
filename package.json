@@ -1,6 +1,6 @@
 {
   "name": "layla-bot",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "بوت ليلى – نظام أوامر ومزاجات ذكي",
   "main": "src/core/layla.js",
   "scripts": {
@@ -24,8 +24,8 @@
     "node-fetch": "^3.3.2",
     "dotenv": "^16.4.1",
     "string-similarity": "^4.0.4",
-    "tinyurl": "^1.1.7",
-    "wikijs": "^6.5.0",
+    "tinyurl3": "^3.0.0",
+    "wikijs": "^6.4.1",
     "sqlite3": "^5.1.6",
     "sequelize": "^6.33.0",
     "@dongdev/fca-unofficial": "github:dongdev/fca-unofficial#main"
