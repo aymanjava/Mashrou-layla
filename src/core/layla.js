@@ -1,31 +1,29 @@
-const { loadCommands } = require("./loader");
-const fca = require("fca-unofficial");
+const { config } = require("./config.json");
+const moods = require("./moods");
+const fca = require("@dongdev/fca-unofficial");
+const fs = require("fs-extra");
+const path = require("path");
 
-const commands = loadCommands();
+async function startBot() {
+  const session = "./session.json"; // ملف الجلسة
+  const client = await fca.create({
+    session: session,
+    logLevel: "silent"
+  });
 
-// إعدادات بوت ليلى
-const apiOptions = {
-  email: "email@domain.com",
-  password: "password_here"
-};
+  console.log("✅ بوت ليلى شغّال الآن!");
 
-fca(apiOptions, (err, api) => {
-  if (err) return console.error("فشل تسجيل الدخول:", err);
-
-  console.log("✅ تم تسجيل الدخول بنجاح!");
-
-  // استماع للرسائل
-  api.listenMqtt((err, event) => {
+  client.listenMqtt(async (err, event) => {
     if (err) return console.error(err);
 
-    for (const command of commands) {
-      if (command.onStart) {
-        try {
-          command.onStart({ api, event });
-        } catch (e) {
-          console.error("خطأ في تنفيذ الأمر:", e.message);
-        }
-      }
+    // مثال أمر المزاج
+    if (event.body && event.body.startsWith(config.prefix + "مزاج")) {
+      const mood = moods[Math.floor(Math.random() * moods.length)];
+      return client.sendMessage(`🎶 مزاج ليلى الآن: ${mood}`, event.threadID, event.messageID);
     }
+
+    // استمع للأوامر الأخرى هنا...
   });
-});
+}
+
+startBot().catch(console.error);
