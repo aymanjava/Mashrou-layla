@@ -9,7 +9,7 @@
   "author": "Ayman",
   "license": "MIT",
   "dependencies": {
-    "fca-project-ayman": "github:aymanjava/fca-project-layla",
+    "fca-project-ayman": "git+https://github.com/aymanjava/fca-project-layla.git",
     "axios": "^1.7.0",
     "body-parser": "^1.20.2",
     "canvas": "^2.12.0",
