@@ -16,7 +16,7 @@
   "license": "MIT",
   "dependencies": {
     "@distube/ytdl-core": "^4.15.0",
-    "@dongdev/fca-unofficial": "https://github.com/dongdev/fca-unofficial.git#main",
+    "@dongdev/fca-unofficial": "github:dongdev/fca-unofficial#main",
     "@ffmpeg-installer/ffmpeg": "^1.2.0",
     "adm-zip": "^0.5.11",
     "axios": "^1.7.0",
