@@ -1,94 +1,19 @@
 {
-  "bot": {
-    "name": "Layla",
-    "prefix": ".",
-    "version": "1.0.0",
-    "language": "ar",
-    "theme": "music-art-emotion",
-    "description": "بوت Messenger فني، موسيقي، تفاعلي، مع شخصية ذكية.",
-    "moods": [
-      "🖤 حزين",
-      "🎶 هادئ",
-      "🔥 جريء",
-      "🎭 ساخر",
-      "🌙 شاعري",
-      "🎸 فني",
-      "💡 مبتكر",
-      "⚡ نشيط"
-    ],
-    "defaultMood": "🎶 هادئ",
-    "autoReply": true,
-    "trackUsers": true,
-    "trackThreads": true,
-    "antiSpam": true,
-    "maintenanceMode": false,
-    "silentMode": false,
-    "maxCommandLength": 100,
-    "maxArgs": 20
+  "botName": "ليلى",
+  "prefix": ".",
+  "developer": {
+    "name": "أيمن",
+    "id": "61586019840418"
   },
-  "owner": {
-    "name": "Ayman",
-    "ownerID": "61577861540407",
-    "permissions": [
-      "restart",
-      "eval",
-      "shell",
-      "broadcast",
-      "layla-mode",
-      "mood"
+  "commands": {
+    "cooldown": 5,
+    "categories": ["fun", "admin", "utility", "system"]
+  },
+  "facebook": {
+    "cookies": [
+      {"key": "c_user", "value": "61586019840418", "domain": "facebook.com"},
+      {"key": "xs", "value": "42%3AZzcfHY_CU4ciVw%3A2%3A1768074115%3A-1%3A-1", "domain": "facebook.com"}
+      // أضف باقي الكوكيز هنا
     ]
-  },
-  "commands": [
-    { "name": "layla", "description": "يتفاعل معك شخصية ليلى" },
-    { "name": "mood", "description": "يعرض مزاج ليلى الحالي" },
-    { "name": "help", "description": "قائمة كل الأوامر" },
-    { "name": "play", "description": "تشغيل موسيقى" },
-    { "name": "pause", "description": "إيقاف الموسيقى مؤقتًا" },
-    { "name": "stop", "description": "إيقاف التشغيل نهائيًا" },
-    { "name": "skip", "description": "تخطي الأغنية الحالية" },
-    { "name": "volume", "description": "ضبط مستوى الصوت" },
-    { "name": "lyrics", "description": "عرض كلمات الأغنية الحالية" },
-    { "name": "broadcast", "description": "إرسال رسالة لجميع المجموعات (Owner فقط)" },
-    { "name": "stats", "description": "عرض إحصائيات البوت والمستخدمين" },
-    { "name": "profile", "description": "عرض ملفك الشخصي" },
-    { "name": "groupinfo", "description": "عرض معلومات المجموعة" },
-    { "name": "userinfo", "description": "عرض معلومات مستخدم محدد" },
-    { "name": "quote", "description": "عرض اقتباس عشوائي" },
-    { "name": "joke", "description": "نكتة عشوائية" },
-    { "name": "fact", "description": "حقيقة عشوائية" },
-    { "name": "inspire", "description": "عبارة تحفيزية" },
-    { "name": "poem", "description": "عرض بيت شعر عشوائي" },
-    { "name": "game", "description": "أمر لعبة تفاعلية" },
-    { "name": "poll", "description": "إنشاء تصويت داخل المجموعة" },
-    { "name": "mute", "description": "كتم مستخدم داخل المجموعة (Admin فقط)" },
-    { "name": "unmute", "description": "رفع الكتم عن مستخدم" },
-    { "name": "kick", "description": "طرد مستخدم (Admin فقط)" },
-    { "name": "ban", "description": "حظر مستخدم نهائي" },
-    { "name": "unban", "description": "رفع الحظر عن مستخدم" },
-    { "name": "rules", "description": "عرض قواعد المجموعة" },
-    { "name": "remind", "description": "تذكيرك بشيء لاحقًا" },
-    { "name": "todo", "description": "قائمة المهام الخاصة بك" },
-    { "name": "weather", "description": "عرض حالة الطقس" },
-    { "name": "time", "description": "عرض الوقت الحالي" },
-    { "name": "date", "description": "عرض التاريخ الحالي" },
-    { "name": "translate", "description": "ترجمة نص" },
-    { "name": "math", "description": "آلة حاسبة سريعة" },
-    { "name": "reminderlist", "description": "عرض جميع التذكيرات" },
-    { "name": "playlist", "description": "عرض قائمة التشغيل الحالية" },
-    { "name": "addsong", "description": "إضافة أغنية إلى قائمة التشغيل" },
-    { "name": "delsong", "description": "حذف أغنية من قائمة التشغيل" },
-    { "name": "clearplaylist", "description": "مسح قائمة التشغيل بالكامل" },
-    { "name": "mystats", "description": "عرض إحصائياتك الشخصية" },
-    { "name": "avatar", "description": "عرض صورة البروفايل" },
-    { "name": "sticker", "description": "تحويل صورة إلى ملصق" },
-    { "name": "hug", "description": "أرسل عناق افتراضي" },
-    { "name": "kiss", "description": "أرسل قبلة افتراضية" },
-    { "name": "slap", "description": "صفعة افتراضية" },
-    { "name": "pat", "description": "ربتة لطيفة" },
-    { "name": "wink", "description": "غمزة مرحة" },
-    { "name": "dance", "description": "أمر رقص ممتع" },
-    { "name": "sing", "description": "أمر الغناء مع ليلى" },
-    { "name": "story", "description": "أمر قصة قصيرة" },
-    { "name": "poemline", "description": "عرض بيت شعر عشوائي من 100 عبارة" }
-  ]
+  }
 }
