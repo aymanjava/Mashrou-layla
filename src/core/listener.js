@@ -1,4 +1,4 @@
-const config = require('../config/bot.config.js');
+const config = require('../../config/bot.config.js');
 
 module.exports = (api, commands) => {
     return async (event) => {
@@ -10,16 +10,12 @@ module.exports = (api, commands) => {
         const command = commands.get(commandName);
 
         if (command) {
-            // فحص الصلاحيات (Admin/Owner)
-            if (command.config.category === "owner" && event.senderID !== config.ownerID) {
-                return api.sendMessage("⚠️ هذا الأمر مخصص للمطور فقط.", event.threadID);
-            }
-
             try {
+                // تشغيل الأمر المختار
                 await command.run({ api, event, args });
-            } catch (error) {
-                console.error(error);
-                api.sendMessage("❌ حدث خطأ أثناء تنفيذ الأمر.", event.threadID);
+            } catch (e) {
+                console.error(e);
+                api.sendMessage("❌ عذراً، واجهت مشكلة في تنفيذ هذا الأمر.", event.threadID);
             }
         }
     };
