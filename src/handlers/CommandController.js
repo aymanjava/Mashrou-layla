@@ -1,24 +1,19 @@
-class CommandController {
-  constructor(bot) {
-    this.bot = bot;
-    this.commands = new Map();
-  }
+module.exports = {
+  name: "CommandController",
 
-  register(command) {
-    this.commands.set(command.name, command);
-  }
+  async handle(event, ctx) {
+    const body = event.body || "";
+    if (!body.startsWith(".")) return;
 
-  async handle(message) {
-    const args = message.body.split(' ');
-    const cmdName = args.shift().toLowerCase();
-    if (this.commands.has(cmdName)) {
-      try {
-        await this.commands.get(cmdName).execute(this.bot, message, args);
-      } catch (err) {
-        console.error('Command error:', err);
-      }
-    }
-  }
-}
+    const [cmd, ...args] = body.slice(1).split(" ");
+    const command = ctx.commands[cmd];
+    if (!command) return;
 
-module.exports = { CommandController };
+    await command.run({
+      api: ctx.api,
+      event,
+      args,
+      utils: ctx.utils
+    });
+  }
+};
