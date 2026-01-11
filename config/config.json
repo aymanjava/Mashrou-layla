@@ -1,8 +1,0 @@
-{
-  "name": "layla",
-  "prefix": ".",
-  "developerID": "61586019840418",
-  "moods": "src/core/moods.js",
-  "commandsFolder": "src/core/commands",
-  "eventsFolder": "src/core/events"
-}
