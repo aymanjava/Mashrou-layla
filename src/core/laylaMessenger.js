@@ -3,7 +3,7 @@ const express = require('express');
 const OpenAI = require('openai');
 
 const app = express();
-app.get('/', (req, res) => res.send('Layla AI is Awake!'));
+app.get('/', (req, res) => res.send('Layla AI is Awake and Running!'));
 app.listen(process.env.PORT || 3000, () => {
     console.log(`📡 Web server running on port ${process.env.PORT || 3000}`);
 });
@@ -18,20 +18,35 @@ if (!appStateData) {
 
 login({ appState: JSON.parse(appStateData) }, (err, api) => {
     if (err) return console.error("❌ Login failed:", err);
+    
     console.log("✅ ليلى متصلة بالمسنجر وجاهزة للرد!");
 
     api.listenMqtt(async (err, message) => {
+        // تجاهل الأخطاء، الرسائل الفارغة، أو رسائل البوت نفسه
         if (err || !message.body || message.senderID === api.getCurrentUserID()) return;
-        
-        // تفاعل البوت عند كتابة ".ليلى "
-        if (message.body.startsWith('.ليلى ')) {
-            try {
-                const completion = await openai.chat.completions.create({
-                    model: "gpt-3.5-turbo",
-                    messages: [{ role: "user", content: message.body.slice(6) }],
-                });
-                api.sendMessage(completion.choices[0].message.content, message.threadID);
-            } catch (error) { console.error(error); }
+
+        try {
+            // إظهار علامة "جارٍ الكتابة..." في المسنجر لتبدو طبيعية
+            api.sendTypingIndicator(message.threadID);
+
+            const completion = await openai.chat.completions.create({
+                model: "gpt-3.5-turbo",
+                messages: [
+                    { role: "system", content: "أنتِ ليلى، مساعدة ذكية ولطيفة تجيب باللغة العربية." },
+                    { role: "user", content: message.body }
+                ],
+                max_tokens: 500
+            });
+
+            const reply = completion.choices[0].message.content;
+            
+            // إرسال الرد للمستخدم
+            api.sendMessage(reply, message.threadID);
+
+        } catch (error) {
+            console.error("❌ OpenAI Error:", error);
+            // اختيارياً: يمكنك إرسال رسالة خطأ بسيطة للمستخدم
+            // api.sendMessage("عذراً، واجهت مشكلة بسيطة في التفكير!", message.threadID);
         }
     });
 });
