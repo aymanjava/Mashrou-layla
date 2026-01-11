@@ -1,10 +1,11 @@
 const fs = require('fs');
 const path = require('path');
 
-function log(type, message) {
-  const logPath = path.join(__dirname, '../../logs', `${type}.log`);
-  const timestamp = new Date().toISOString();
-  fs.appendFileSync(logPath, `[${timestamp}] ${message}\n`);
-}
-
-module.exports = { log };
+module.exports = {
+    log: (message) => {
+        fs.appendFileSync(path.join(__dirname, '../logs/events.log'), `[${new Date().toISOString()}] ${message}\n`);
+    },
+    error: (err) => {
+        fs.appendFileSync(path.join(__dirname, '../logs/error.log'), `[${new Date().toISOString()}] ${err}\n`);
+    }
+};
