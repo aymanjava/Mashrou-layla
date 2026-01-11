@@ -1,38 +1,34 @@
-const login = require("fca-unofficial");
-const fs = require("fs-extra");
-const path = require("path");
-const loader = require("./src/core/loader");
-const listener = require("./src/core/listener");
+const fs = require('fs');
+const path = require('path');
+const Layla = require('./src/core/layla');
 
-// التأكد من وجود ملف الـ AppState
-const appStatePath = "./appstate/appstate.json";
-
-if (!fs.existsSync(appStatePath)) {
-    console.error("❌ خطأ: ملف appstate.json غير موجود في مجلد appstate!");
+// تحميل AppState لتسجيل الدخول تلقائيًا
+const appStatePath = path.join(__dirname, 'appstate', 'appstate.json');
+if(!fs.existsSync(appStatePath)) {
+    console.error('❌ AppState غير موجود! يرجى تسجيل الدخول أولاً.');
     process.exit(1);
 }
 
-const appState = fs.readJsonSync(appStatePath);
+const appState = JSON.parse(fs.readFileSync(appStatePath, 'utf-8'));
 
-login({ appState }, (err, api) => {
-    if (err) return console.error("❌ فشل تسجيل الدخول:", err);
+// إنشاء مثيل البوت
+const bot = new Layla(appState);
 
-    api.setOptions({
-        listenEvents: true,
-        selfListen: false,
-        online: true,
-        forceLogin: true
+// بدء البوت
+bot.start()
+    .then(() => {
+        console.log('🚀 ليلى أصبحت متصلة وجاهزة على Messenger!');
+    })
+    .catch(err => {
+        console.error('❌ حدث خطأ أثناء تشغيل ليلى:', err);
+        process.exit(1);
     });
 
-    // تحميل الأوامر والأحداث
-    const { commands, events } = loader(api);
+// مراقبة الأخطاء غير المعالجة
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
 
-    // بدء الاستماع
-    api.listenMqtt(async (err, event) => {
-        if (err) return;
-        const handle = listener(api, commands, events);
-        handle(event);
-    });
-
-    console.log("🚀 [ LAYLA ] النظام جاهز للعمل تحت إشراف أيمن!");
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
 });
