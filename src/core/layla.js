@@ -7,6 +7,19 @@ const { Sequelize } = require('sequelize');
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
+const express = require('express'); // إضافة express
+
+// ================== WEB SERVER (FOR RENDER) ==================
+const app = express();
+const port = process.env.PORT || 3000;
+
+app.get('/', (req, res) => {
+  res.send('✅ Layla Bot is Alive and Running!');
+});
+
+app.listen(port, () => {
+  console.log(`📡 سرفر الويب جاهز على المنفذ ${port}`);
+});
 
 // ================== ENV ==================
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
