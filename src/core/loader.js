@@ -1,26 +1,31 @@
 const fs = require('fs-extra');
 const path = require('path');
 
-module.exports = () => {
+module.exports = (api) => {
     const commands = new Map();
-    const cmdPath = path.join(__dirname, '../modules/commands');
+    const events = new Map();
 
-    const loadDir = (dir) => {
-        const files = fs.readdirSync(dir);
-        for (const file of files) {
-            const fullPath = path.join(dir, file);
-            if (fs.statSync(fullPath).isDirectory()) {
-                loadDir(fullPath); // يدخل للمجلدات الفرعية
-            } else if (file.endsWith('.js')) {
-                const cmd = require(fullPath);
-                if (cmd.config && cmd.config.name) {
-                    commands.set(cmd.config.name, cmd);
-                }
-            }
-        }
+    // تحميل الأوامر
+    const cmdPath = path.join(__dirname, '../modules/commands');
+    const loadCommands = (dir) => {
+        fs.readdirSync(dir).forEach(file => {
+            const str = path.join(dir, file);
+            if (fs.statSync(str).isDirectory()) return loadCommands(str);
+            if (!file.endsWith('.js')) return;
+            const cmd = require(str);
+            commands.set(cmd.config.name, cmd);
+        });
     };
 
-    loadDir(cmdPath);
-    console.log(`✅ تم تحميل ${commands.size} أمر بنجاح!`);
-    return commands;
+    // تحميل الأحداث (ترحيب، مغادرة، تفاعل)
+    const eventPath = path.join(__dirname, '../events');
+    fs.readdirSync(eventPath).forEach(file => {
+        if (!file.endsWith('.js')) return;
+        const event = require(path.join(eventPath, file));
+        events.set(event.config.name, event);
+    });
+
+    loadCommands(cmdPath);
+    console.log(`🚀 تم تفعيل العملاق: ${commands.size} أمر | ${events.size} حدث`);
+    return { commands, events };
 };
