@@ -1,16 +1,14 @@
-const path = require("path");
-const fileDB = require("../utils/fileDB");
-const { mimicAdvanced, musicReaction, fanMessage, ownerAlert } = require("../utils");
+const path = require('path');
+const fileDB = require('../utils/fileDB');
 
 module.exports = {
-  name: "message",
+  name: 'message',
   execute({ api, event }) {
     if (!event.body) return;
     if (event.senderID === api.getCurrentUserID()) return;
 
-    // تحديث قاعدة المستخدمين والثريدات
-    const usersPath = path.join(__dirname, "../database/users.json");
-    const threadsPath = path.join(__dirname, "../database/threads.json");
+    const usersPath = path.join(__dirname, '../database/users.json');
+    const threadsPath = path.join(__dirname, '../database/threads.json');
 
     const users = fileDB.read(usersPath);
     const threads = fileDB.read(threadsPath);
@@ -23,11 +21,5 @@ module.exports = {
 
     fileDB.write(usersPath, users);
     fileDB.write(threadsPath, threads);
-
-    // أنظمة تفاعلية
-    mimicAdvanced.reply(event.body, api, event.threadID);
-    musicReaction.check(event.body, api, event.threadID);
-    fanMessage.reply(event.body, api, event.threadID);
-    ownerAlert.alert(event.body, api, event.threadID);
   }
 };
