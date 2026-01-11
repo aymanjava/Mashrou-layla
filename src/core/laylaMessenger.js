@@ -1,63 +1,53 @@
-require('dotenv').config();
-const login = require('fb-chat-api');
-const fs = require('fs');
-const path = require('path');
+const login = require("fca-project-orion");
 const express = require('express');
-const { ask } = require('../utils/openaiAI');
+const OpenAI = require('openai');
 
-// ================== WEB SERVER (لـ Render) ==================
+// --- خادم ويب لمنع Render من النوم ---
 const app = express();
-app.get('/', (req, res) => res.send('✅ Layla Messenger is Alive!'));
-app.listen(process.env.PORT || 3000, () =>
-  console.log('📡 خادم ويب شغال!')
-);
+app.get('/', (req, res) => res.send('Layla AI is Awake!'));
+app.listen(process.env.PORT || 3000, () => {
+    console.log(`📡 Web server running on port ${process.env.PORT || 3000}`);
+});
 
-// ================== AppState ==================
-const appStatePath = './appstate.json';
-if (!fs.existsSync(appStatePath)) {
-  console.error('❌ ملف appstate.json غير موجود!');
-  process.exit(1);
+// --- إعداد OpenAI (الإصدار الجديد) ---
+const openai = new OpenAI({ apiKey: process.env.OPENAI_KEY });
+
+// --- قراءة AppState من متغيرات البيئة ---
+const appStateData = process.env.APP_STATE;
+
+if (!appStateData) {
+    console.error("❌ APP_STATE missing in environment variables!");
+    process.exit(1);
 }
-const appState = JSON.parse(fs.readFileSync(appStatePath, 'utf8'));
 
-// ================== تسجيل الدخول ==================
-login({ appState }, (err, api) => {
-  if (err) return console.error('❌ خطأ تسجيل الدخول:', err);
-  console.log('✅ ليلى متصلة الآن بالمسنجر عبر AppState!');
+// --- تسجيل الدخول وتشغيل البوت ---
+login({ appState: JSON.parse(appStateData) }, (err, api) => {
+    if (err) return console.error("❌ Login failed:", err);
 
-  // ================== تحميل الأحداث ==================
-  const eventsPath = path.join(__dirname, '../events');
-  const eventFiles = fs.existsSync(eventsPath)
-    ? fs.readdirSync(eventsPath).filter(f => f.endsWith('.js'))
-    : [];
+    console.log("✅ ليلى متصلة بالمسنجر وجاهزة للرد!");
 
-  const events = new Map();
-  for (const file of eventFiles) {
-    const ev = require(path.join(eventsPath, file));
-    events.set(ev.name, ev.execute.bind(null, api));
-  }
+    api.listenMqtt(async (err, message) => {
+        if (err || !message.body || message.senderID === api.getCurrentUserID()) return;
 
-  // ================== بدء الاستماع ==================
-  api.listenMqtt((err, event) => {
-    if (err) return console.error(err);
-    if (!event.body) return;
+        const input = message.body.trim();
 
-    const command = event.body.trim();
+        // أمر خاص باسم ".ليلى"
+        if (input.startsWith('.ليلى ')) {
+            const question = input.slice(7); // إزالة ".ليلى "
+            try {
+                const completion = await openai.chat.completions.create({
+                    model: "gpt-3.5-turbo",
+                    messages: [{ role: "user", content: question }],
+                    max_tokens: 250
+                });
 
-    // تنفيذ أحداث عامة
-    if (events.has('message')) events.get('message')({ api, event });
+                const reply = completion.choices[0].message.content;
+                api.sendMessage(reply, message.threadID);
 
-    // أمر ذكاء اصطناعي: .ليلى <سؤال>
-    if (command.startsWith('.ليلى')) {
-      const question = command.replace('.ليلى', '').trim();
-      if (!question) return api.sendMessage('❌ اكتب السؤال بعد ".ليلى"', event.threadID);
-
-      ask(question).then(answer => {
-        api.sendMessage(`🤖 ليلى: ${answer}`, event.threadID);
-      }).catch(e => {
-        console.error('❌ خطأ AI:', e);
-        api.sendMessage('❌ حدث خطأ أثناء معالجة السؤال', event.threadID);
-      });
-    }
-  });
+            } catch (error) {
+                console.error("❌ OpenAI Error:", error);
+                api.sendMessage("❌ حدث خطأ أثناء معالجة السؤال", message.threadID);
+            }
+        }
+    });
 });
