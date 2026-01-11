@@ -1,28 +1,29 @@
-const modulesPath = path.join(__dirname, "../modules");
+const fs = require('fs-extra');
+const path = require('path');
 
-const loadModules = () => {
-  const files = fs.readdirSync(modulesPath);
-  for (const file of files) {
-    const mod = require(path.join(modulesPath, file));
+module.exports = (api) => {
+    const commands = new Map();
+    const commandsPath = path.join(__dirname, '../modules/commands');
 
-    // رفع Commands
-    if (mod.commands) {
-      for (const cmd of mod.commands) {
-        if (cmd.name && typeof cmd.execute === "function") {
-          global.Layla.commands.set(cmd.name, cmd);
+    // وظيفة للبحث داخل المجلدات الفرعية
+    const loadCommands = (dir) => {
+        const files = fs.readdirSync(dir);
+        for (const file of files) {
+            const filePath = path.join(dir, file);
+            const stat = fs.statSync(filePath);
+
+            if (stat.isDirectory()) {
+                loadCommands(filePath); // إذا وجد مجلد يدخله (مثل admin)
+            } else if (file.endsWith('.js')) {
+                const command = require(filePath);
+                if (command.config && command.config.name) {
+                    commands.set(command.config.name, command);
+                    console.log(`✅ تم تحميل الأمر: [${command.config.name}] من ${file}`);
+                }
+            }
         }
-      }
-    }
+    };
 
-    // رفع Events
-    if (mod.events) {
-      for (const ev of mod.events) {
-        if (ev.name && typeof ev.execute === "function") {
-          global.Layla.events.set(ev.name, ev);
-        }
-      }
-    }
-  }
-
-  console.log(`✅ Loaded Modules`);
+    loadCommands(commandsPath);
+    return commands;
 };
