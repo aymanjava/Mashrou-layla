@@ -1,19 +1,26 @@
+require("dotenv").config();
 const login = require("fca-unofficial");
+const fs = require("fs-extra");
 const loader = require("./src/core/loader");
 const listener = require("./src/core/listener");
 
-login({ appState: JSON.parse(process.env.APP_STATE) }, (err, api) => {
-    if (err) return console.error(err);
+// قراءة الـ AppState من المجلد الجديد
+const appState = JSON.parse(fs.readFileSync("./appstate/appstate.json", "utf8"));
 
-    // تحميل الأسلحة والأوامر
+login({ appState }, (err, api) => {
+    if (err) return console.error("❌ فشل تسجيل الدخول:", err);
+
+    api.setOptions({ listenEvents: true, selfListen: false, online: true });
+
+    // تحميل الأوامر من المجلدات
     const { commands, events } = loader(api);
 
-    // تشغيل نظام الاستماع الذكي
+    // الاستماع والرد
     api.listenMqtt(async (err, event) => {
         if (err) return;
-        
-        // تمرير الأوامر والأحداث للمستمع
         const handle = listener(api, commands, events);
         handle(event);
     });
+
+    console.log("✅ ليلى العملاقة متصلة الآن!");
 });
