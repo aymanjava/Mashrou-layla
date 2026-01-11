@@ -1,4 +1,4 @@
-const login = require("fca-project-orion");
+const login = require("fca-unofficial"); // التعديل هنا ليتناسب مع package.json الجديد
 const express = require('express');
 const OpenAI = require('openai');
 
@@ -9,10 +9,10 @@ app.listen(process.env.PORT || 3000, () => {
     console.log(`📡 Web server running on port ${process.env.PORT || 3000}`);
 });
 
-// --- إعداد OpenAI (الإصدار الجديد) ---
+// --- إعداد OpenAI ---
 const openai = new OpenAI({ apiKey: process.env.OPENAI_KEY });
 
-// --- قراءة AppState من متغيرات البيئة ---
+// --- قراءة AppState من إعدادات Render ---
 const appStateData = process.env.APP_STATE;
 
 if (!appStateData) {
@@ -31,9 +31,9 @@ login({ appState: JSON.parse(appStateData) }, (err, api) => {
 
         const input = message.body.trim();
 
-        // أمر خاص باسم ".ليلى"
+        // التفاعل عند مناداة البوت بـ ".ليلى "
         if (input.startsWith('.ليلى ')) {
-            const question = input.slice(7); // إزالة ".ليلى "
+            const question = input.slice(6); // تم التعديل ليناسب طول الكلمة بدقة
             try {
                 const completion = await openai.chat.completions.create({
                     model: "gpt-3.5-turbo",
