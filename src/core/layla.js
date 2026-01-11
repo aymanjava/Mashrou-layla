@@ -7,9 +7,9 @@ const { Sequelize } = require('sequelize');
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
-const express = require('express'); // إضافة express
+const express = require('express'); // ضروري لمنع توقف البوت في Render
 
-// ================== WEB SERVER (FOR RENDER) ==================
+// ================== WEB SERVER (ANTI-SLEEP) ==================
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -18,7 +18,7 @@ app.get('/', (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`📡 سرفر الويب جاهز على المنفذ ${port}`);
+  console.log(`📡 خادم الويب يعمل على المنفذ ${port}`);
 });
 
 // ================== ENV ==================
