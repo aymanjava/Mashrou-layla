@@ -3,29 +3,25 @@ const path = require('path');
 
 module.exports = (api) => {
     const commands = new Map();
-    const events = new Map();
-
-    // تحميل الأوامر
     const cmdPath = path.join(__dirname, '../modules/commands');
+
+    // وظيفة البحث العميق في المجلدات
     const loadCommands = (dir) => {
-        fs.readdirSync(dir).forEach(file => {
-            const str = path.join(dir, file);
-            if (fs.statSync(str).isDirectory()) return loadCommands(str);
-            if (!file.endsWith('.js')) return;
-            const cmd = require(str);
-            commands.set(cmd.config.name, cmd);
+        const files = fs.readdirSync(dir);
+        files.forEach(file => {
+            const fullPath = path.join(dir, file);
+            if (fs.statSync(fullPath).isDirectory()) {
+                loadCommands(fullPath); // يدخل للمجلدات الفرعية (admin/fun/...)
+            } else if (file.endsWith('.js')) {
+                const cmd = require(fullPath);
+                if (cmd.config && cmd.config.name) {
+                    commands.set(cmd.config.name, cmd);
+                }
+            }
         });
     };
 
-    // تحميل الأحداث (ترحيب، مغادرة، تفاعل)
-    const eventPath = path.join(__dirname, '../events');
-    fs.readdirSync(eventPath).forEach(file => {
-        if (!file.endsWith('.js')) return;
-        const event = require(path.join(eventPath, file));
-        events.set(event.config.name, event);
-    });
-
     loadCommands(cmdPath);
-    console.log(`🚀 تم تفعيل العملاق: ${commands.size} أمر | ${events.size} حدث`);
-    return { commands, events };
+    console.log(`🚀 [ LAYLA MEGA ] تم تفعيل ${commands.size} أمر من المجلدات!`);
+    return { commands };
 };
