@@ -1,14 +1,20 @@
 {
-  "name": "layla-messenger",
+  "name": "lulu-messenger-bot",
   "version": "1.0.0",
-  "main": "src/core/laylaMessenger.js",
+  "description": "بوت لولو – Messenger + ذكاء اصطناعي GPT",
+  "main": "src/core/luluBot.js",
   "scripts": {
-    "start": "node src/core/laylaMessenger.js"
+    "start": "node src/core/luluBot.js"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "dependencies": {
-    "fca-unofficial": "latest",
-    "express": "^4.18.2",
-    "openai": "^4.26.0",
-    "dotenv": "^16.4.1"
+    "fca-unofficial": "^2.0.0",          // مكتبة الفيسبوك المستقرة
+    "express": "^4.18.2",                // خادم ويب بسيط لمنع Render من النوم
+    "openai": "^4.26.0",                 // ذكاء اصطناعي GPT
+    "dotenv": "^16.4.1",                 // تحميل المتغيرات من .env
+    "fs-extra": "^11.2.0",               // للتعامل مع الملفات (اختياري للتخزين)
+    "path": "^0.12.7"                    // للعمل مع المسارات
   }
 }
