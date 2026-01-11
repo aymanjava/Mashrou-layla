@@ -1,68 +1,84 @@
-const login = require("fca-unofficial");
-const express = require('express');
-const OpenAI = require('openai');
+// ==========================
+// Layla Lite Bot – نسخة سريعة بدون OpenAI
+// ==========================
+require('dotenv').config();
 
-// --- خادم ويب بسيط ---
+const express = require('express');
+const login = require('fca-unofficial');
+
+// 🟢 إعداد Express للبقاء متصلاً
 const app = express();
-app.get('/', (req, res) => res.send('Layla Bot is Active!'));
+app.get('/', (req, res) => res.send('Layla Lite is Running!'));
 app.listen(process.env.PORT || 3000);
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_KEY });
+// 🟢 قراءة AppState
 const appStateData = process.env.APP_STATE;
+if (!appStateData) throw new Error("APP_STATE missing in Environment Variables!");
 
 login({ appState: JSON.parse(appStateData) }, (err, api) => {
     if (err) return console.error("❌ فشل الدخول:", err);
 
-    api.setOptions({
-        listenEvents: true,
-        selfListen: false,
-        online: true
-    });
+    api.setOptions({ listenEvents: true, selfListen: false, online: true });
+    console.log("✅ ليلى (النسخة الخفيفة) جاهزة للعمل!");
 
-    console.log("✅ ليلى تعمل الآن بدون أنظمة خارجية!");
+    const spamControl = {};
 
-    api.listenMqtt(async (err, message) => {
-        if (err || !message.body || message.senderID === api.getCurrentUserID()) return;
+    api.listenMqtt(async (err, event) => {
+        if (err) return;
 
-        const body = message.body.toLowerCase();
-        const threadID = message.threadID;
-
-        // 1. ترحيب الأعضاء الجدد في الكروبات
-        if (message.type === "event" && message.logMessageType === "log:subscribe") {
-            const name = message.logMessageData.addedParticipants[0].fullName;
-            return api.sendMessage(`🎵 أهلاً بك يا ${name} نورت المجموعة! أنا ليلى مساعدتكم الذكية.`, threadID);
+        // 🟢 1. ترحيب المجموعات (Events)
+        if (event.type === "event" && event.logMessageType === "log:subscribe") {
+            const addedParticipants = event.logMessageData.addedParticipants;
+            for (const person of addedParticipants) {
+                api.sendMessage(`🎶 أهلاً بك يا ${person.fullName} في مجموعتنا! نورتنا 🖤`, event.threadID);
+            }
+            return;
         }
 
-        // 2. ردود سريعة مدمجة (بدون ملفات خارجية)
-        const quickReplies = {
-            "مرحبا": "أهلاً بك.. كيف أساعدك اليوم؟ 🖤",
-            "السلام عليكم": "وعليكم السلام ورحمة الله وبركاته.. نورت 🎶",
-            "بوت": "اسمي ليلى.. اسألني أي شيء بذكر اسمي أو في الخاص."
+        // تجاهل أي شيء غير الرسائل
+        if (event.type !== "message" && event.type !== "message_reply") return;
+        if (!event.body || event.senderID === api.getCurrentUserID()) return;
+
+        const body = event.body.trim().toLowerCase();
+        const threadID = event.threadID;
+        const messageID = event.messageID;
+
+        // 🟢 2. حماية بسيطة من السبام
+        const now = Date.now();
+        if (spamControl[event.senderID] && now - spamControl[event.senderID] < 1000) return;
+        spamControl[event.senderID] = now;
+
+        // 🟢 3. نظام الردود التلقائية (يمكنك إضافة ما تريد هنا)
+        const autoReplies = {
+            "مرحبا": "أهلاً بك يا طيب.. كيف أساعدك؟ 🌸",
+            "السلام عليكم": "وعليكم السلام ورحمة الله وبركاته.. نورت المجموعة 🎶",
+            "باي": "في أمان الله، ننتظر عودتك 💖",
+            "كيفك": "الحمد لله بخير، أنت كيف حالك؟ 😉",
+            "ليلى": "عيون ليلى.. نادني بالأوامر (مثال: مزاج) 🖤",
+            "بوت": "أنا ليلى.. لست مجرد بوت، أنا رفيقتكم في المجموعة!"
         };
 
-        if (quickReplies[body]) {
-            return api.sendMessage(quickReplies[body], threadID);
+        // فحص الكلمات المفتاحية
+        for (const key in autoReplies) {
+            if (body.includes(key)) {
+                return api.sendMessage(autoReplies[key], threadID, messageID);
+            }
         }
 
-        // 3. ذكاء ليلى (OpenAI)
-        // ترد إذا ذكرت "ليلى" في الكروب أو إذا كانت المحادثة خاصة
-        const isGroup = threadID !== message.senderID;
-        if (body.includes("ليلى") || !isGroup) {
-            try {
-                api.sendTypingIndicator(threadID);
-                const completion = await openai.chat.completions.create({
-                    model: "gpt-3.5-turbo",
-                    messages: [
-                        { role: "system", content: "أنتِ ليلى، مساعدة ذكية ولطيفة. تردين باللغة العربية بأسلوب فني هادئ." },
-                        { role: "user", content: message.body }
-                    ],
-                });
+        // 🟢 4. أوامر الترفيه (بدون ملفات خارجية)
+        if (body.includes("مزاج")) {
+            const moods = ["🔥 متوهجة", "🎶 هادئة جداً", "🖤 شاعرة", "🎭 مرحة", "🌙 مسترخية"];
+            const randomMood = moods[Math.floor(Math.random() * moods.length)];
+            return api.sendMessage(`🎭 مزاج ليلى الآن: ${randomMood}`, threadID, messageID);
+        }
 
-                const reply = completion.choices[0].message.content;
-                api.sendMessage(reply, threadID, message.messageID);
-            } catch (e) {
-                console.error("OpenAI Error:", e);
-            }
+        if (body === "ايدي") {
+            return api.sendMessage(`🆔 معرفك الخاص: ${event.senderID}`, threadID, messageID);
+        }
+
+        if (body === "الوقت") {
+            const time = new Date().toLocaleTimeString('ar-EG');
+            return api.sendMessage(`🕒 الساعة الآن: ${time}`, threadID, messageID);
         }
     });
 });
