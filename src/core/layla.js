@@ -1,116 +1,64 @@
-// src/core/layla.js
-
-require('dotenv').config();
-
-const { Client, GatewayIntentBits } = require('discord.js');
-const { Sequelize } = require('sequelize');
-const fs = require('fs');
-const path = require('path');
+const express = require('express');
 const axios = require('axios');
-const express = require('express'); // ضروري لمنع توقف البوت في Render
-
-// ================== WEB SERVER (ANTI-SLEEP) ==================
 const app = express();
-const port = process.env.PORT || 3000;
+app.use(express.json());
 
+const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
+const VERIFY_TOKEN = process.env.VERIFY_TOKEN; // كلمة السر التي تضعها في فيسبوك
+
+// 1. تفعيل الـ Webhook (ضروري لربط Render بفيسبوك)
 app.get('/', (req, res) => {
-  res.send('✅ Layla Bot is Alive and Running!');
-});
+  const mode = req.query['hub.mode'];
+  const token = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
 
-app.listen(port, () => {
-  console.log(`📡 خادم الويب يعمل على المنفذ ${port}`);
-});
-
-// ================== ENV ==================
-const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
-const OPENAI_KEY = process.env.OPENAI_KEY || null;
-const DATABASE_URL = process.env.DATABASE_URL || 'sqlite:./database.sqlite';
-
-if (!DISCORD_TOKEN) {
-  console.error('❌ DISCORD_TOKEN غير موجود');
-  process.exit(1);
-}
-
-// ================== DATABASE ==================
-const sequelize = new Sequelize(DATABASE_URL, {
-  logging: false,
-});
-
-// ================== DISCORD CLIENT ==================
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
-  ],
-});
-
-client.commands = new Map();
-
-// ================== LOAD COMMANDS ==================
-const commandsPath = path.join(__dirname, '../commands');
-if (fs.existsSync(commandsPath)) {
-  const files = fs.readdirSync(commandsPath).filter(f => f.endsWith('.js'));
-  for (const file of files) {
-    const command = require(path.join(commandsPath, file));
-    client.commands.set(command.config.name, command);
-  }
-}
-
-// ================== DEFAULT COMMAND ==================
-client.commands.set('mood', {
-  config: {
-    name: 'mood',
-    description: 'يعرض مزاج ليلى الحالي',
-  },
-  onStart: async ({ message }) => {
-    const moods = [
-      "🔥 جريئة ولا أقبل التحدي إلا للفوز",
-      "🎶 هادئة كهدوء ما قبل العاصفة",
-      "🖤 حزينة لكن كبريائي يمنعني من الانكسار",
-      "🧨 متفجرة.. اقترب بحذر",
-    ];
-    message.reply(`🎭 مزاج ليلى الآن: ${moods[Math.floor(Math.random() * moods.length)]}`);
-  },
-});
-
-// ================== EVENTS ==================
-client.once('ready', async () => {
-  console.log(`✅ ليلى تعمل الآن | ${client.user.tag}`);
-  try {
-    await sequelize.authenticate();
-    console.log('✅ قاعدة البيانات متصلة');
-  } catch (err) {
-    console.error('❌ فشل الاتصال بقاعدة البيانات:', err);
+  if (mode && token) {
+    if (mode === 'subscribe' && token === VERIFY_TOKEN) {
+      console.log('✅ تم تفعيل Webhook فيسبوك بنجاح');
+      res.status(200).send(challenge);
+    } else {
+      res.sendStatus(403);
+    }
+  } else {
+    res.send('✅ سيرفر ليلى يعمل وجاهز لاستقبال رسائل مسنجر');
   }
 });
 
-client.on('messageCreate', async (message) => {
-  if (message.author.bot) return;
+// 2. استقبال الرسائل والرد عليها
+app.post('/', async (req, res) => {
+  const body = req.body;
 
-  const prefix = '!';
-  if (!message.content.startsWith(prefix)) return;
+  if (body.object === 'page') {
+    body.entry.forEach(async (entry) => {
+      const webhook_event = entry.messaging[0];
+      const sender_psid = webhook_event.sender.id; // معرف الشخص اللي ارسل
 
-  const args = message.content.slice(prefix.length).trim().split(/ +/);
-  const name = args.shift().toLowerCase();
+      if (webhook_event.message && webhook_event.message.text) {
+        const text = webhook_event.message.text.toLowerCase();
 
-  const command = client.commands.get(name);
-  if (!command) return;
-
-  try {
-    await command.onStart({
-      client,
-      message,
-      args,
-      axios,
-      sequelize,
-      OPENAI_KEY,
+        // الرد على أمر !mood
+        if (text === '!mood') {
+          await sendResponse(sender_psid, "🎭 مزاج ليلى الآن: 🔥 جريئة ومستعدة للمسنجر!");
+        }
+      }
     });
-  } catch (err) {
-    console.error('❌ خطأ أمر:', err);
-    message.reply('❌ صار خطأ أثناء تنفيذ الأمر');
+    res.status(200).send('EVENT_RECEIVED');
+  } else {
+    res.sendStatus(404);
   }
 });
 
-// ================== LOGIN ==================
-client.login(DISCORD_TOKEN);
+// وظيفة إرسال الرسالة لفيسبوك
+async function sendResponse(sender_psid, responseText) {
+  try {
+    await axios.post(`https://graph.facebook.com/v12.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`, {
+      recipient: { id: sender_psid },
+      message: { text: responseText }
+    });
+  } catch (error) {
+    console.error('❌ خطأ في إرسال الرسالة:', error.response.data);
+  }
+}
+
+const port = process.env.PORT || 3000;
+app.listen(port, () => console.log(`📡 سيرفر المسنجر جاهز على منفذ ${port}`));
