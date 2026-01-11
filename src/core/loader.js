@@ -1,24 +1,28 @@
-const fs = require("fs");
-const path = require("path");
+const modulesPath = path.join(__dirname, "../modules");
 
-module.exports.loadCommands = (client) => {
-  const commandFiles = fs.readdirSync(path.join(__dirname, "../commands"))
-    .filter(file => file.endsWith(".js"));
+const loadModules = () => {
+  const files = fs.readdirSync(modulesPath);
+  for (const file of files) {
+    const mod = require(path.join(modulesPath, file));
 
-  for (const file of commandFiles) {
-    const command = require(`../commands/${file}`);
-    client.commands.set(command.config.name, command);
+    // رفع Commands
+    if (mod.commands) {
+      for (const cmd of mod.commands) {
+        if (cmd.name && typeof cmd.execute === "function") {
+          global.Layla.commands.set(cmd.name, cmd);
+        }
+      }
+    }
+
+    // رفع Events
+    if (mod.events) {
+      for (const ev of mod.events) {
+        if (ev.name && typeof ev.execute === "function") {
+          global.Layla.events.set(ev.name, ev);
+        }
+      }
+    }
   }
-  console.log(`[✅] تم تحميل ${commandFiles.length} أوامر`);
-};
 
-module.exports.loadEvents = (client) => {
-  const eventFiles = fs.readdirSync(path.join(__dirname, "../events"))
-    .filter(file => file.endsWith(".js"));
-
-  for (const file of eventFiles) {
-    const event = require(`../events/${file}`);
-    client.on(event.name, (...args) => event.run(client, ...args));
-  }
-  console.log(`[✅] تم تحميل ${eventFiles.length} أحداث`);
+  console.log(`✅ Loaded Modules`);
 };
