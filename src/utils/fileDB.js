@@ -2,10 +2,19 @@ const fs = require('fs-extra');
 
 module.exports = {
     read: (path) => {
-        if (!fs.existsSync(path)) fs.writeJsonSync(path, {});
-        return fs.readJsonSync(path);
+        try {
+            return fs.readJsonSync(path);
+        } catch (e) {
+            return {};
+        }
     },
     write: (path, data) => {
-        fs.writeJsonSync(path, data, { spaces: 4 });
+        try {
+            fs.writeJsonSync(path, data, { spaces: 2 });
+            return true;
+        } catch (e) {
+            console.error("❌ خطأ في حفظ البيانات:", e);
+            return false;
+        }
     }
 };
