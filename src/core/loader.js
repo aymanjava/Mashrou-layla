@@ -1,32 +1,36 @@
-const fs = require('fs-extra');
+const fs = require('fs');
 const path = require('path');
 
-module.exports = (api) => {
-    const commands = new Map();
-    const events = new Map();
+class Loader {
+  constructor(bot) {
+    this.bot = bot;
+  }
 
-    const cmdPath = path.join(__dirname, '../modules/commands');
-    const eventPath = path.join(__dirname, '../modules/events');
+  loadCommands() {
+    const commandsPath = path.join(__dirname, '../modules/commands');
+    const categories = fs.readdirSync(commandsPath);
+    for (const category of categories) {
+      const files = fs.readdirSync(path.join(commandsPath, category));
+      for (const file of files) {
+        const command = require(path.join(commandsPath, category, file));
+        this.bot.commands.register(command);
+      }
+    }
+  }
 
-    // وظيفة التحميل التلقائي من المجلدات الفرعية
-    const loadFiles = (dir, collection) => {
-        if (!fs.existsSync(dir)) return;
-        const files = fs.readdirSync(dir);
-        files.forEach(file => {
-            const fullPath = path.join(dir, file);
-            if (fs.statSync(fullPath).isDirectory()) {
-                loadFiles(fullPath, collection);
-            } else if (file.endsWith('.js')) {
-                const module = require(fullPath);
-                const name = module.config?.name || module.name;
-                if (name) collection.set(name, module);
-            }
-        });
-    };
+  loadEvents() {
+    const eventsPath = path.join(__dirname, '../events');
+    const files = fs.readdirSync(eventsPath);
+    for (const file of files) {
+      const event = require(path.join(eventsPath, file));
+      this.bot.events.register(event);
+    }
+  }
 
-    loadFiles(cmdPath, commands);
-    loadFiles(eventPath, events);
+  async loadAll() {
+    this.loadCommands();
+    this.loadEvents();
+  }
+}
 
-    console.log(`🚀 [ LAYLA ] تم تحميل ${commands.size} أمر و ${events.size} حدث.`);
-    return { commands, events };
-};
+module.exports = Loader;
