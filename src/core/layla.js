@@ -1,46 +1,29 @@
-const login = require("fca-unofficial");
-const fs = require("fs");
-const path = require("path");
+require('dotenv').config();
+const { MessengerClient } = require('fca-unofficial');
+const Loader = require('./loader');
+const Listener = require('./listener');
+const { EventController } = require('../handlers/EventController');
+const { CommandController } = require('../handlers/CommandController');
+const path = require('path');
 
-// تحديد مسار الـ AppState بناءً على هيكلك الجديد
-const appStatePath = path.join(__dirname, "../../appstate/appstate.json");
+class Layla {
+  constructor() {
+    this.client = new MessengerClient({
+      appStateFile: path.join(__dirname, '../../appstate/appstate.json')
+    });
+    this.loader = new Loader(this);
+    this.listener = new Listener(this);
+    this.commands = new CommandController(this);
+    this.events = new EventController(this);
+  }
 
-function startBot() {
-    try {
-        const appState = JSON.parse(fs.readFileSync(appStatePath, "utf8"));
-        
-        login({ appState }, (err, api) => {
-            if (err) {
-                console.error("❌ خطأ في تسجيل الدخول: ", err);
-                return;
-            }
-
-            // إعدادات الاتصال الأساسية
-            api.setOptions({
-                listenEvents: true,
-                selfListen: false,
-                forceLogin: true,
-                online: true
-            });
-
-            console.log("✅ [ LAYLA ] تم الاتصال بنجاح! البوت الآن أونلاين.");
-
-            // الاستماع الأولي فقط للتأكد من العمل
-            api.listenMqtt((err, event) => {
-                if (err) return;
-                
-                if (event.type === "message") {
-                    console.log(`📩 رسالة جديدة من ${event.senderID}: ${event.body}`);
-                    // رَد اختبار بسيط جداً
-                    if (event.body === "فحص") {
-                        api.sendMessage("العملاق ليلى متصلة وجاهزة! 🎶", event.threadID);
-                    }
-                }
-            });
-        });
-    } catch (error) {
-        console.error("❌ لم يتم العثور على ملف appstate.json في مجلد appstate");
-    }
+  async start() {
+    console.log('🚀 Starting Layla Bot...');
+    await this.client.login();
+    await this.loader.loadAll();
+    this.listener.listenAll();
+    console.log('✅ Layla Bot is online!');
+  }
 }
 
-module.exports = { startBot };
+module.exports = Layla;
