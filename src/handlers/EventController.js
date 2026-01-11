@@ -1,31 +1,16 @@
-const fs = require('fs');
-const path = require('path');
+module.exports = {
+  name: "EventController",
 
-class EventController {
-    constructor(bot) {
-        this.bot = bot;
-        this.events = new Map();
-        this.loadEvents();
+  handle(event, ctx) {
+    ctx.handlers.SpamController.check(event, ctx);
+
+    if (event.type === "message" || event.type === "message_reply") {
+      ctx.events.message?.run(event, ctx);
     }
 
-    loadEvents() {
-        const eventFiles = fs.readdirSync(path.join(__dirname, '../events')).filter(f => f.endsWith('.js'));
-        for (const file of eventFiles) {
-            const event = require(`../events/${file}`);
-            this.events.set(event.name, event);
-        }
-        console.log(`[EventController] تم تحميل ${this.events.size} حدث.`);
+    if (event.logMessageType) {
+      const ev = ctx.events[event.logMessageType];
+      ev && ev.run(event, ctx);
     }
-
-    async handle(eventName, eventData) {
-        if (this.events.has(eventName)) {
-            try {
-                await this.events.get(eventName).execute(this.bot, eventData);
-            } catch (err) {
-                console.error(`[EventController] خطأ في حدث ${eventName}:`, err);
-            }
-        }
-    }
-}
-
-module.exports = EventController;
+  }
+};
