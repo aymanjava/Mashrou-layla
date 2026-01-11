@@ -1,17 +1,11 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require('fs-extra');
 
-function read(filePath) {
-  if (!fs.existsSync(filePath)) return {};
-  try {
-    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-  } catch {
-    return {};
-  }
-}
-
-function write(filePath, data) {
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-}
-
-module.exports = { read, write };
+module.exports = {
+    read: (path) => {
+        if (!fs.existsSync(path)) fs.writeJsonSync(path, {});
+        return fs.readJsonSync(path);
+    },
+    write: (path, data) => {
+        fs.writeJsonSync(path, data, { spaces: 4 });
+    }
+};
