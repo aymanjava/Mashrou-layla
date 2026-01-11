@@ -1,20 +1,19 @@
-const login = require('fca-unofficial');
-const loader = require('./src/core/loader');
-const listener = require('./src/core/listener');
-const appState = JSON.parse(process.env.APP_STATE);
+const login = require("fca-unofficial");
+const loader = require("./src/core/loader");
+const listener = require("./src/core/listener");
 
-login({ appState }, (err, api) => {
+login({ appState: JSON.parse(process.env.APP_STATE) }, (err, api) => {
     if (err) return console.error(err);
 
-    console.log("🚀 جاري تحميل نظام ليلى المطور...");
-    
-    // 1. تحميل الأوامر
-    const commands = loader(api);
-    
-    // 2. بدء الاستماع
+    // تحميل الأسلحة والأوامر
+    const { commands, events } = loader(api);
+
+    // تشغيل نظام الاستماع الذكي
     api.listenMqtt(async (err, event) => {
         if (err) return;
-        const listen = listener(api, commands);
-        await listen(event);
+        
+        // تمرير الأوامر والأحداث للمستمع
+        const handle = listener(api, commands, events);
+        handle(event);
     });
 });
