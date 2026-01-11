@@ -1,15 +1,13 @@
-// Anti-spam system – يمنع الرسائل المتكررة بسرعة
 const recentMessages = new Map();
-const SPAM_INTERVAL = 3000; // 3 ثواني بين الرسائل
 
 module.exports = {
-  check(senderID) {
-    const now = Date.now();
-    if (recentMessages.has(senderID)) {
-      const last = recentMessages.get(senderID);
-      if (now - last < SPAM_INTERVAL) return true;
+    isSpam: (userID) => {
+        const now = Date.now();
+        if(!recentMessages.has(userID)) recentMessages.set(userID, []);
+        const times = recentMessages.get(userID);
+        times.push(now);
+        // إزالة الرسائل القديمة أكثر من 5 ثواني
+        recentMessages.set(userID, times.filter(t => now - t < 5000));
+        return recentMessages.get(userID).length > 5;
     }
-    recentMessages.set(senderID, now);
-    return false;
-  }
 };
