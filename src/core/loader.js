@@ -1,44 +1,28 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
+
+function loadDir(dir) {
+  const data = {};
+  fs.readdirSync(dir).forEach(file => {
+    const full = path.join(dir, file);
+    if (fs.statSync(full).isDirectory())
+      Object.assign(data, loadDir(full));
+    else if (file.endsWith(".js")) {
+      const mod = require(full);
+      data[mod.name || file.replace(".js","")] = mod;
+    }
+  });
+  return data;
+}
 
 module.exports = {
-    loadCommands: () => {
-        const commands = {};
-        const commandFolders = fs.readdirSync(path.join(__dirname, '../modules/commands'));
-
-        for (const folder of commandFolders) {
-            const files = fs.readdirSync(path.join(__dirname, `../modules/commands/${folder}`)).filter(f => f.endsWith('.js'));
-            for (const file of files) {
-                const cmd = require(`../modules/commands/${folder}/${file}`);
-                commands[cmd.name] = cmd;
-            }
-        }
-        return commands;
-    },
-
-    loadEvents: () => {
-        const events = {};
-        const files = fs.readdirSync(path.join(__dirname, '../events')).filter(f => f.endsWith('.js'));
-
-        for (const file of files) {
-            const evt = require(`../events/${file}`);
-            events[evt.name] = evt;
-        }
-        return events;
-    },
-
-    loadFeatures: () => {
-        const features = {};
-        const featureFolders = fs.readdirSync(path.join(__dirname, '../modules/features'));
-
-        for (const folder of featureFolders) {
-            features[folder] = {};
-            const files = fs.readdirSync(path.join(__dirname, `../modules/features/${folder}`)).filter(f => f.endsWith('.js'));
-            for (const file of files) {
-                const feature = require(`../modules/features/${folder}/${file}`);
-                features[folder][feature.name] = feature;
-            }
-        }
-        return features;
-    }
+  loadAll(api) {
+    return {
+      api,
+      events: loadDir(path.resolve("src/events")),
+      commands: loadDir(path.resolve("src/modules/commands")),
+      utils: loadDir(path.resolve("src/utils")),
+      handlers: loadDir(path.resolve("src/handlers"))
+    };
+  }
 };
